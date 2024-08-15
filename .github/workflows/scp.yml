@@ -17,8 +17,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # Debugging step to verify that the variables are set correctly
-    - name: Debug Variables
+    - name: Debug Variables (optional - for troubleshooting)
       run: |
         echo "AWS_ACCESS_KEY_ID=${{ vars.AWS_ACCESS_KEY_ID }}"
         echo "AWS_SECRET_ACCESS_KEY=${{ vars.AWS_SECRET_ACCESS_KEY }}"
@@ -29,7 +28,7 @@ jobs:
       with:
         aws-access-key-id: ${{ vars.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ vars.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ vars.AWS_REGION }}  # Explicitly set the region using vars
+        aws-region: ${{ vars.AWS_REGION }}
 
     - name: Deploy SCPs
       run: |
