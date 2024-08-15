@@ -1,4 +1,5 @@
-name: Deploy SCPs to AWS Control Tower
+name: Deploy SCPs to AWS Control Tower1
+
 
 on:
   push:
