@@ -1,4 +1,4 @@
-name: Deploy SCPs to AWS Control Tower1
+name: Deploy SCPs to AWS Control Tower
 
 
 on:
