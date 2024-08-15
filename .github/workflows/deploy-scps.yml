@@ -1,0 +1,54 @@
+name: Deploy SCPs to AWS Control Tower
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: eu-north-1
+      SCP_DIRECTORY: scps/
+      POLICY_DESCRIPTION: 'SCP deployed by GitHub Actions'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up AWS CLI
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Deploy SCPs
+      run: |
+        for file in "$SCP_DIRECTORY"*.json; do
+          if [ -f "$file" ]; then
+            policy_name=$(basename "$file" .json)
+            policy_id=$(aws organizations list-policies --filter SERVICE_CONTROL_POLICY --query "Policies[?Name=='$policy_name'].Id" --output text)
+
+            if [ -z "$policy_id" ]; then
+              echo "Creating new policy: $policy_name"
+              aws organizations create-policy \
+                --name "$policy_name" \
+                --description "$POLICY_DESCRIPTION" \
+                --type SERVICE_CONTROL_POLICY \
+                --content file://"$file"
+            else
+              echo "Updating existing policy: $policy_name"
+              aws organizations update-policy \
+                --policy-id "$policy_id" \
+                --content file://"$file"
+            fi
+          else
+            echo "Error: No JSON files found in $SCP_DIRECTORY."
+            exit 1
+          fi
+        done
